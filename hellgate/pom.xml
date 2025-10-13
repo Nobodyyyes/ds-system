@@ -20,7 +20,31 @@
         <!-- Внутренние зависимости -->
         <dependency>
             <groupId>esmukanov.ds.system</groupId>
+            <artifactId>audit-service</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>esmukanov.ds.system</groupId>
+            <artifactId>key-management</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>esmukanov.ds.system</groupId>
+            <artifactId>signature-service</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>esmukanov.ds.system</groupId>
             <artifactId>user-management</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>esmukanov.ds.system</groupId>
+            <artifactId>verification-service</artifactId>
             <version>${project.version}</version>
         </dependency>
 

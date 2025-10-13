@@ -4,3 +4,6 @@ server:
 spring:
   application:
     name: digital-signature-system
+
+  profiles:
+    include: ${SPRING_PROFILES_INCLUDE:datasource}

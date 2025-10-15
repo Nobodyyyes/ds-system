@@ -1,7 +1,7 @@
 package esmukanov.ds.system.controllers;
 
 import esmukanov.ds.system.services.UserService;
-import esmukanov.ds.system.users.models.User;
+import esmukanov.ds.system.models.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

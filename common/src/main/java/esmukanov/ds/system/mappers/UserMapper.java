@@ -1,8 +1,8 @@
 package esmukanov.ds.system.mappers;
 
-import esmukanov.ds.system.components.BaseMapper;
-import esmukanov.ds.system.users.entities.UserEntity;
-import esmukanov.ds.system.users.models.User;
+import esmukanov.ds.system.components.base.BaseMapper;
+import esmukanov.ds.system.entities.UserEntity;
+import esmukanov.ds.system.models.User;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -7,3 +7,9 @@ spring:
 
   profiles:
     include: ${SPRING_PROFILES_INCLUDE:datasource}
+
+minio-config:
+  url: ${MINIO_URL:localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:digitals}
+  secret-key: ${MINIO_SECRET_KEY:digitals}
+  bucket: ${MINIO_BUCKET:documents}

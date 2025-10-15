@@ -17,5 +17,10 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>esmukanov.ds.system</groupId>
+            <artifactId>key-management</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 </project>

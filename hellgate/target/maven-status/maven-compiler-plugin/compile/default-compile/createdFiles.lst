@@ -1,2 +1,6 @@
+esmukanov\ds\system\controllers\SignatureController.class
 esmukanov\ds\system\controllers\UserManagementController.class
 esmukanov\ds\system\HellgateApplication.class
+esmukanov\ds\system\controllers\DocumentController.class
+esmukanov\ds\system\controllers\VerificationController.class
+esmukanov\ds\system\controllers\KeyController.class

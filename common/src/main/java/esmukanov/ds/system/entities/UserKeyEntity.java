@@ -21,11 +21,9 @@ public class UserKeyEntity {
     @Column(name = "user_id")
     private UUID userId;
 
-    @Lob
-    @Column(name = "private_key")
+    @Column(name = "private_key", length = 4096)
     private String privateKey;
 
-    @Lob
-    @Column(name = "public_key")
+    @Column(name = "public_key", length = 4096)
     private String publicKey;
 }

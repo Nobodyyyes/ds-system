@@ -8,6 +8,7 @@ import esmukanov.ds.system.models.UserKey;
 import esmukanov.ds.system.repositories.KeyRepository;
 import esmukanov.ds.system.services.KeyService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
@@ -47,6 +48,7 @@ public class KeyServiceImpl extends BaseCrudOperationImpl<UserKey, UserKeyEntity
      * @throws NoSuchAlgorithmException если алгоритм RSA не поддерживается
      */
     @Override
+    @Transactional
     public void generateKeyPair(UUID userId) throws NoSuchAlgorithmException {
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
         generator.initialize(2048);
@@ -82,14 +84,11 @@ public class KeyServiceImpl extends BaseCrudOperationImpl<UserKey, UserKeyEntity
      *
      * @param userId идентификатор пользователя
      * @return PublicKey публичный ключ пользователя
-     * @throws NoSuchAlgorithmException если алгоритм RSA не поддерживается
-     * @throws InvalidKeySpecException  если спецификация ключа некорректна
-     * @throws NotFoundException        если ключ пользователя не найден
+     * @throws NotFoundException если ключ пользователя не найден
      */
     @Override
-    public PublicKey getPublicKey(UUID userId) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    public String getPublicKey(UUID userId) {
         UserKey userKey = findByUserId(userId).orElseThrow(() -> new NotFoundException("UserKey by ID [%s] not found".formatted(userId)));
-        byte[] keyBytes = Base64.getDecoder().decode(userKey.getPublicKey());
-        return KeyFactory.getInstance("RSA").generatePublic(new PKCS8EncodedKeySpec(keyBytes));
+        return userKey.getPublicKey();
     }
 }

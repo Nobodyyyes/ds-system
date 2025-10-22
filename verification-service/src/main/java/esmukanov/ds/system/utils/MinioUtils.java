@@ -14,4 +14,8 @@ public class MinioUtils {
         String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("ddMMyyyyHHmm"));
         return String.format("%s/%s/%s", username, uuid, date);
     }
+
+    public static String normalizedPathPrefix(String basePath) {
+        return basePath.endsWith("/") ? basePath : basePath + "/";
+    }
 }

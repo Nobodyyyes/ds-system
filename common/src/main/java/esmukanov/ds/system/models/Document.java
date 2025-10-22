@@ -1,6 +1,7 @@
 package esmukanov.ds.system.models;
 
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -14,9 +15,7 @@ public class Document {
 
     private UUID id;
 
-    private String name;
-
-    private String type;
+    private String fileName;
 
     private String filePath;
 
@@ -27,4 +26,6 @@ public class Document {
     private UUID ownerId;
 
     private String signature;
+
+    private MultipartFile file;
 }

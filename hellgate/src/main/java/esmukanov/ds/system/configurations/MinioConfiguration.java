@@ -1,6 +1,6 @@
 package esmukanov.ds.system.configurations;
 
-import esmukanov.ds.system.configurations.properties.MinioProperties;
+import esmukanov.ds.system.properties.MinioProperties;
 import io.minio.MinioClient;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;

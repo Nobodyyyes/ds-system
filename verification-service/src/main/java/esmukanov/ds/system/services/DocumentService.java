@@ -8,9 +8,9 @@ import java.util.UUID;
 
 public interface DocumentService extends BaseCrudOperation<Document, UUID> {
 
-    List<Document> getUserDocuments(UUID userId);
+    List<Document> getUserDocuments(UUID userId, String basePath);
 
-    Document uploadDocument(Document document);
+    String uploadDocument(Document document, String username);
 
     void attachSignature(UUID documentId, String signatureBase64);
 }

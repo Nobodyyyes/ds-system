@@ -15,14 +15,14 @@ public class DocumentController {
 
     private final DocumentService documentService;
 
-    @GetMapping("/user/{userId}")
-    public List<Document> getUserDocuments(@PathVariable UUID userId) {
-        return documentService.getUserDocuments(userId);
+    @GetMapping("/user/{userId}/basePath/{basePath}")
+    public List<Document> getUserDocuments(@PathVariable UUID userId, @PathVariable String basePath) {
+        return documentService.getUserDocuments(userId, basePath);
     }
 
-    @PostMapping
-    public Document uploadDocument(@RequestBody Document document) {
-        return documentService.uploadDocument(document);
+    @PostMapping("/{username}")
+    public String uploadDocument(@RequestBody Document document, @PathVariable String username) {
+        return documentService.uploadDocument(document, username);
     }
 
     @PutMapping("/{documentId}/signature")

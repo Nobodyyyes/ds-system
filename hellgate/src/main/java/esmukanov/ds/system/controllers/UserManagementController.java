@@ -1,10 +1,14 @@
 package esmukanov.ds.system.controllers;
 
+import esmukanov.ds.system.dtos.request.RegisterRequest;
+import esmukanov.ds.system.dtos.response.RegisterResponse;
 import esmukanov.ds.system.services.UserService;
 import esmukanov.ds.system.models.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.awt.*;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,5 +42,13 @@ public class UserManagementController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable UUID id) {
         userService.delete(id);
+    }
+
+    @PostMapping(value = "/register",
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    public RegisterResponse registerUser(@RequestBody RegisterRequest registerRequest) {
+        return userService.registerUser(registerRequest);
     }
 }

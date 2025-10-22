@@ -1,10 +1,13 @@
 package esmukanov.ds.system.services;
 
+import esmukanov.ds.system.models.Attachment;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface MinioService {
 
-    String uploadBucket(String username, List<MultipartFile> files);
+    String upload(String username, List<MultipartFile> files);
+
+    List<Attachment> getAttachment(String basePah);
 }

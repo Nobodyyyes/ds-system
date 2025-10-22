@@ -14,8 +14,7 @@ public class DocumentMapper implements BaseMapper<Document, DocumentEntity> {
 
         return Document.builder()
                 .id(entity.getId())
-                .name(entity.getName())
-                .type(entity.getType())
+                .fileName(entity.getName())
                 .filePath(entity.getFilePath())
                 .uploadDate(entity.getUploadDate())
                 .signedDate(entity.getSignedDate())
@@ -30,8 +29,8 @@ public class DocumentMapper implements BaseMapper<Document, DocumentEntity> {
 
         return DocumentEntity.builder()
                 .id(model.getId())
-                .name(model.getName())
-                .type(model.getType())
+                .name(model.getFile().getOriginalFilename())
+                .type(model.getFile().getContentType())
                 .filePath(model.getFilePath())
                 .uploadDate(model.getUploadDate())
                 .signedDate(model.getSignedDate())

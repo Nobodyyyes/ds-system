@@ -4,10 +4,13 @@ import esmukanov.ds.system.components.base.BaseCrudOperationImpl;
 import esmukanov.ds.system.entities.DocumentEntity;
 import esmukanov.ds.system.exceptions.NotFoundException;
 import esmukanov.ds.system.mappers.DocumentMapper;
+import esmukanov.ds.system.models.Attachment;
 import esmukanov.ds.system.models.Document;
 import esmukanov.ds.system.repositories.DocumentRepository;
 import esmukanov.ds.system.services.DocumentService;
+import esmukanov.ds.system.services.MinioService;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,10 +23,13 @@ public class DocumentServiceImpl extends BaseCrudOperationImpl<Document, Documen
 
     private final DocumentMapper documentMapper;
 
-    public DocumentServiceImpl(DocumentRepository documentRepository, DocumentMapper documentMapper) {
+    private final MinioService minioService;
+
+    public DocumentServiceImpl(DocumentRepository documentRepository, DocumentMapper documentMapper, MinioService minioService) {
         super(documentRepository, documentMapper);
         this.documentRepository = documentRepository;
         this.documentMapper = documentMapper;
+        this.minioService = minioService;
     }
 
     /**
@@ -33,8 +39,21 @@ public class DocumentServiceImpl extends BaseCrudOperationImpl<Document, Documen
      * @return список моделей документов, принадлежащих пользователю
      */
     @Override
-    public List<Document> getUserDocuments(UUID userId) {
-        return documentMapper.toModels(documentRepository.findAllByOwnerId(userId));
+    public List<Document> getUserDocuments(UUID userId, String basePath) {
+        List<Attachment> attachments = minioService.getAttachment(basePath);
+
+        List<Document> documents = documentMapper.toModels(documentRepository.findAllByOwnerId(userId));
+        if (documents.isEmpty()) {
+            throw new NotFoundException(String.format("No documents found for userId [%s]", userId));
+        }
+
+        for (Document document : documents) {
+            attachments.stream()
+                    .filter(a -> a.getFileName().equals(document.getFileName()))
+                    .findFirst();
+        }
+
+        return documents;
     }
 
     /**
@@ -44,9 +63,20 @@ public class DocumentServiceImpl extends BaseCrudOperationImpl<Document, Documen
      * @return сохранённая модель документа с установленной датой загрузки
      */
     @Override
-    public Document uploadDocument(Document document) {
+    public String uploadDocument(Document document, String username) {
+        if (document == null || document.getFile().isEmpty()) {
+            throw new IllegalArgumentException("File is empty or null");
+        }
+
+        List<MultipartFile> files = List.of(document.getFile());
+        String uploadedPath = minioService.upload(username, files);
+
         document.setUploadDate(LocalDateTime.now());
-        return documentMapper.toModel(documentRepository.save(documentMapper.toEntity(document)));
+        document.setFilePath(uploadedPath);
+
+        documentRepository.save(documentMapper.toEntity(document));
+
+        return uploadedPath;
     }
 
     /**

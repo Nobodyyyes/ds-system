@@ -1,5 +1,7 @@
-C:\Users\esmukanov\IdeaProjects\projects\ds-system\verification-service\src\main\java\esmukanov\ds\system\repositories\DocumentRepository.java
-C:\Users\esmukanov\IdeaProjects\projects\ds-system\verification-service\src\main\java\esmukanov\ds\system\services\DocumentService.java
-C:\Users\esmukanov\IdeaProjects\projects\ds-system\verification-service\src\main\java\esmukanov\ds\system\services\impl\DocumentServiceImpl.java
-C:\Users\esmukanov\IdeaProjects\projects\ds-system\verification-service\src\main\java\esmukanov\ds\system\services\impl\VerificationServiceImpl.java
-C:\Users\esmukanov\IdeaProjects\projects\ds-system\verification-service\src\main\java\esmukanov\ds\system\services\VerificationService.java
+/Users/esmukanov/Downloads/projects/ds-system/verification-service/src/main/java/esmukanov/ds/system/repositories/DocumentRepository.java
+/Users/esmukanov/Downloads/projects/ds-system/verification-service/src/main/java/esmukanov/ds/system/services/DocumentService.java
+/Users/esmukanov/Downloads/projects/ds-system/verification-service/src/main/java/esmukanov/ds/system/services/MinioService.java
+/Users/esmukanov/Downloads/projects/ds-system/verification-service/src/main/java/esmukanov/ds/system/services/VerificationService.java
+/Users/esmukanov/Downloads/projects/ds-system/verification-service/src/main/java/esmukanov/ds/system/services/impl/DocumentServiceImpl.java
+/Users/esmukanov/Downloads/projects/ds-system/verification-service/src/main/java/esmukanov/ds/system/services/impl/MinioServiceImpl.java
+/Users/esmukanov/Downloads/projects/ds-system/verification-service/src/main/java/esmukanov/ds/system/services/impl/VerificationServiceImpl.java

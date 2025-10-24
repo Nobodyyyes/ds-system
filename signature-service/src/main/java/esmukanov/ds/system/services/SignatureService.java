@@ -1,5 +1,8 @@
 package esmukanov.ds.system.services;
 
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -8,7 +11,7 @@ import java.util.UUID;
 
 public interface SignatureService {
 
-    byte[] signData(byte[] data, UUID userId) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException;
+    String signDocument(MultipartFile file, UUID userId) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, IOException;
 
     boolean verifySignature(byte[] data, byte[] signatureBytes, UUID userId) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException;
 }

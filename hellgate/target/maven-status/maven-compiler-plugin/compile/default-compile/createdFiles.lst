@@ -1,8 +1,8 @@
-esmukanov/ds/system/configurations/MinioConfiguration.class
-esmukanov/ds/system/configurations/properties/MinioProperties.class
-esmukanov/ds/system/controllers/VerificationController.class
-esmukanov/ds/system/controllers/DocumentController.class
-esmukanov/ds/system/controllers/KeyController.class
-esmukanov/ds/system/controllers/UserManagementController.class
-esmukanov/ds/system/controllers/SignatureController.class
-esmukanov/ds/system/HellgateApplication.class
+esmukanov\ds\system\controllers\SignatureController.class
+esmukanov\ds\system\controllers\UserManagementController.class
+esmukanov\ds\system\HellgateApplication.class
+esmukanov\ds\system\configurations\SecurityConfiguration.class
+esmukanov\ds\system\controllers\DocumentController.class
+esmukanov\ds\system\configurations\MinioConfiguration.class
+esmukanov\ds\system\controllers\VerificationController.class
+esmukanov\ds\system\controllers\KeyController.class

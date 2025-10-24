@@ -1,38 +1,76 @@
 package esmukanov.ds.system.services.impl;
 
+import esmukanov.ds.system.mappers.DocumentSignatureMapper;
+import esmukanov.ds.system.models.DocumentSignature;
+import esmukanov.ds.system.repositories.DocumentSignatureRepository;
 import esmukanov.ds.system.services.KeyService;
 import esmukanov.ds.system.services.SignatureService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
+import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class SignatureServiceImpl implements SignatureService {
 
+    private final DocumentSignatureRepository documentSignatureRepository;
+
+    private final DocumentSignatureMapper documentSignatureMapper;
+
     private final KeyService keyService;
 
     /**
-     * Создаёт цифровую подпись для заданных данных и пользователя.
+     * Подписывает переданный файл для указанного пользователя.
+     * Шаги:
+     * 1. Считывает байты файла и вычисляет хеш SHA-256.
+     * 2. Получает закрытый ключ пользователя через KeyService.
+     * 3. Формирует цифровую подпись (алгоритм SHA256withRSA) над хешем.
+     * 4. Сохраняет метаданные подписи (без самой подписи) в репозиторий.
      *
-     * @param data   данные для подписи
-     * @param userId идентификатор пользователя
-     * @return байты цифровой подписи
-     * @throws NoSuchAlgorithmException если алгоритм подписи не найден
-     * @throws InvalidKeySpecException  если спецификация ключа некорректна
-     * @throws InvalidKeyException      если ключ некорректен
+     * @param file   исходный файл для подписи
+     * @param userId идентификатор пользователя, чей ключ используется
+     * @return Base64-представление созданной подписи
+     *
+     * @throws NoSuchAlgorithmException если алгоритм SHA-256 или SHA256withRSA недоступен
+     * @throws InvalidKeySpecException  если спецификация ключа некорректна при извлечении
+     * @throws InvalidKeyException      если закрытый ключ некорректен
      * @throws SignatureException       если произошла ошибка при создании подписи
+     * @throws IOException              если ошибка чтения содержимого файла
      */
     @Override
-    public byte[] signData(byte[] data, UUID userId) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+    public String signDocument(MultipartFile file, UUID userId) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, IOException {
+        byte[] fileBytes = file.getBytes();
+
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hashBytes = digest.digest(fileBytes);
+        String hashBase64 = Base64.getEncoder().encodeToString(hashBytes);
+
         PrivateKey privateKey = keyService.getPrivateKey(userId);
+
         Signature signature = Signature.getInstance("SHA256withRSA");
         signature.initSign(privateKey);
-        signature.update(data);
-        return signature.sign();
+        signature.update(hashBytes);
+        byte[] signedBytes = signature.sign();
+        String signatureBase64 = Base64.getEncoder().encodeToString(signedBytes);
+
+        DocumentSignature documentSignature = DocumentSignature.builder()
+                .userId(userId)
+                .fileName(file.getOriginalFilename())
+                .fileHash(hashBase64)
+                .signedDate(LocalDateTime.now())
+                .signature(signatureBase64)
+                .build();
+
+        documentSignatureRepository.save(documentSignatureMapper.toEntity(documentSignature));
+
+        return signatureBase64;
     }
 
     /**

@@ -10,4 +10,6 @@ import java.util.UUID;
 public interface UserService extends BaseCrudOperation<User, UUID> {
 
     RegisterResponse registerUser(RegisterRequest registerRequest);
+
+    boolean existsUser(UUID userId);
 }

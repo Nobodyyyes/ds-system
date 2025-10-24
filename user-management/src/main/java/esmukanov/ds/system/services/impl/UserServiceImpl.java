@@ -60,4 +60,15 @@ public class UserServiceImpl extends BaseCrudOperationImpl<User, UserEntity, UUI
                 .setUsername(user.getUsername())
                 .setRegisteredDate(LocalDateTime.now());
     }
+
+    /**
+     * Проверяет существование пользователя по его идентификатору.
+     *
+     * @param userId уникальный идентификатор пользователя
+     * @return true если пользователь существует, иначе false
+     */
+    @Override
+    public boolean existsUser(UUID userId) {
+        return userRepository.existsById(userId);
+    }
 }

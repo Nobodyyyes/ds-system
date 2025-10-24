@@ -7,6 +7,7 @@ import esmukanov.ds.system.mappers.KeyMapper;
 import esmukanov.ds.system.models.UserKey;
 import esmukanov.ds.system.repositories.KeyRepository;
 import esmukanov.ds.system.services.KeyService;
+import esmukanov.ds.system.services.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,10 +25,13 @@ public class KeyServiceImpl extends BaseCrudOperationImpl<UserKey, UserKeyEntity
 
     private final KeyMapper keyMapper;
 
-    public KeyServiceImpl(KeyRepository keyRepository, KeyMapper keyMapper) {
+    private final UserService userService;
+
+    public KeyServiceImpl(KeyRepository keyRepository, KeyMapper keyMapper, UserService userService) {
         super(keyRepository, keyMapper);
         this.keyRepository = keyRepository;
         this.keyMapper = keyMapper;
+        this.userService = userService;
     }
 
     /**
@@ -54,13 +58,16 @@ public class KeyServiceImpl extends BaseCrudOperationImpl<UserKey, UserKeyEntity
         generator.initialize(2048);
         KeyPair keyPair = generator.generateKeyPair();
 
-        UserKeyEntity userKeyEntity = UserKeyEntity.builder()
+        // Проверяем, существует ли такой юзер вообще
+        if (!userService.existsUser(userId)) throw new NotFoundException("User by ID [%s] not found");
+
+        UserKey userKey = UserKey.builder()
                 .userId(userId)
                 .privateKey(Base64.getEncoder().encodeToString(keyPair.getPrivate().getEncoded()))
                 .publicKey(Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()))
                 .build();
 
-        keyRepository.save(userKeyEntity);
+        keyRepository.save(keyMapper.toEntity(userKey));
     }
 
     /**

@@ -1,5 +1,6 @@
 package esmukanov.ds.system.services;
 
+import esmukanov.ds.system.enums.VerificationStatus;
 import esmukanov.ds.system.models.Document;
 
 import java.io.IOException;
@@ -11,5 +12,6 @@ import java.util.UUID;
 
 public interface VerificationService {
 
-    boolean verifyDocumentSignature(Document document, byte[] signatureBytes, UUID userId) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException;
+    // todo: возвращать статус VALID, INVALID, EXPIRED
+    VerificationStatus verifyDocument(Document document, byte[] signatureBytes, UUID userId) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException;
 }

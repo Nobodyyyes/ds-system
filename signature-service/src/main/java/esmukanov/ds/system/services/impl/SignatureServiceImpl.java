@@ -37,7 +37,6 @@ public class SignatureServiceImpl implements SignatureService {
      * @param file   исходный файл для подписи
      * @param userId идентификатор пользователя, чей ключ используется
      * @return Base64-представление созданной подписи
-     *
      * @throws NoSuchAlgorithmException если алгоритм SHA-256 или SHA256withRSA недоступен
      * @throws InvalidKeySpecException  если спецификация ключа некорректна при извлечении
      * @throws InvalidKeyException      если закрытый ключ некорректен
@@ -81,18 +80,26 @@ public class SignatureServiceImpl implements SignatureService {
      * @param userId         идентификатор пользователя
      * @return true, если подпись действительна, иначе false
      * @throws NoSuchAlgorithmException если алгоритм подписи не найден
-     * @throws InvalidKeySpecException  если спецификация ключа некорректна
      * @throws InvalidKeyException      если ключ некорректен
      * @throws SignatureException       если произошла ошибка при проверке подписи
      */
     @Override
-    public boolean verifySignature(byte[] data, byte[] signatureBytes, UUID userId) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
-//        PublicKey publicKey = keyService.getPublicKey(userId);
-//        Signature signature = Signature.getInstance("SHA256withRSA");
-//        signature.initVerify(publicKey);
-//        signature.update(data);
-//        return signature.verify(signatureBytes);
+    public boolean verifySignature(byte[] data, byte[] signatureBytes, UUID userId) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+        PublicKey publicKey = keyService.getPublicKey(userId);
 
-        return true;
+        Signature signature = Signature.getInstance("SHA256withRSA");
+        signature.initVerify(publicKey);
+
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hashBytes = digest.digest(data);
+
+        signature.update(hashBytes);
+
+        return signature.verify(signatureBytes);
+    }
+
+    @Override
+    public byte[] signData(UUID userId, byte[] data) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+        return new byte[0];
     }
 }

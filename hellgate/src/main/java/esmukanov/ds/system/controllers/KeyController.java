@@ -21,6 +21,6 @@ public class KeyController {
 
     @GetMapping("/public/{userId}")
     public String getPublicKey(@PathVariable UUID userId) {
-        return keyService.getPublicKey(userId);
+        return keyService.getPublicKeyAsString(userId);
     }
 }

@@ -9,4 +9,6 @@ import java.util.UUID;
 public interface KeyRepository extends JpaRepository<UserKeyEntity, UUID> {
 
     Optional<UserKeyEntity> findByUserId(UUID userId);
+
+    void deleteAllByUserId(UUID userId);
 }

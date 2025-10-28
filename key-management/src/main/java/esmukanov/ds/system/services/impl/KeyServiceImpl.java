@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,7 +42,7 @@ public class KeyServiceImpl extends BaseCrudOperationImpl<UserKey, UserKeyEntity
      * @return {@link UserKey} объект ключа пользователя, если найден
      */
     @Override
-    public Optional<UserKey> findByUserId(UUID userId) {
+    public Optional<UserKey> findKeysByUserId(UUID userId) {
         return keyRepository.findByUserId(userId).map(keyMapper::toModel);
     }
 
@@ -81,21 +82,56 @@ public class KeyServiceImpl extends BaseCrudOperationImpl<UserKey, UserKeyEntity
      */
     @Override
     public PrivateKey getPrivateKey(UUID userId) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        UserKey userKey = findByUserId(userId).orElseThrow(() -> new NotFoundException("UserKey by ID [%s] not found".formatted(userId)));
+        UserKey userKey = findKeysByUserId(userId).orElseThrow(() -> new NotFoundException("UserKey by ID [%s] not found".formatted(userId)));
         byte[] keyBytes = Base64.getDecoder().decode(userKey.getPrivateKey());
         return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
     }
 
     /**
-     * Получает публичный ключ пользователя по его идентификатору.
+     * Возвращает публичный RSA ключ пользователя по его идентификатору.
+     * Выполняет поиск сохранённой пары ключей, декодирует Base64 представление
+     * и восстанавливает объект PublicKey через X509EncodedKeySpec.
+     *
+     * @param userId идентификатор пользователя
+     * @return публичный ключ пользователя
+     * @throws NotFoundException если ключ пользователя не найден
+     * @throws RuntimeException  при ошибке восстановления ключа (алгоритм или спецификация)
+     */
+    @Override
+    public PublicKey getPublicKey(UUID userId) {
+        UserKey userKey = findKeysByUserId(userId).orElseThrow(() -> new NotFoundException("UserKey by ID [%s] not found".formatted(userId)));
+
+        try {
+            byte[] keyBytes = Base64.getDecoder().decode(userKey.getPublicKey());
+            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
+            return KeyFactory.getInstance("RSA").generatePublic(keySpec);
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new RuntimeException("Failed to generate public key for user " + userId, e);
+        }
+    }
+
+    /**
+     * Получает публичный ключ как строку пользователя по его идентификатору.
      *
      * @param userId идентификатор пользователя
      * @return PublicKey публичный ключ пользователя
      * @throws NotFoundException если ключ пользователя не найден
      */
     @Override
-    public String getPublicKey(UUID userId) {
-        UserKey userKey = findByUserId(userId).orElseThrow(() -> new NotFoundException("UserKey by ID [%s] not found".formatted(userId)));
+    public String getPublicKeyAsString(UUID userId) {
+        UserKey userKey = findKeysByUserId(userId).orElseThrow(() -> new NotFoundException("UserKey by ID [%s] not found".formatted(userId)));
         return userKey.getPublicKey();
+    }
+
+    /**
+     * Удаляет все ключи пользователя по его идентификатору.
+     *
+     * Если пользователь не существует, метод завершается без действий.
+     *
+     * @param userId идентификатор пользователя
+     */
+    @Override
+    public void deleteKeys(UUID userId) {
+        if (userService.existsUser(userId)) keyRepository.deleteAllByUserId(userId);
     }
 }

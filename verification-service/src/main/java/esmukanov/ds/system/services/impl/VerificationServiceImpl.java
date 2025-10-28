@@ -1,5 +1,6 @@
 package esmukanov.ds.system.services.impl;
 
+import esmukanov.ds.system.enums.VerificationStatus;
 import esmukanov.ds.system.models.Document;
 import esmukanov.ds.system.services.SignatureService;
 import esmukanov.ds.system.services.VerificationService;
@@ -35,8 +36,9 @@ public class VerificationServiceImpl implements VerificationService {
      * @throws InvalidKeyException      если ключ недействителен
      */
     @Override
-    public boolean verifyDocumentSignature(Document document, byte[] signatureBytes, UUID userId) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+    public VerificationStatus verifyDocument(Document document, byte[] signatureBytes, UUID userId) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
         byte[] data = Files.readAllBytes(Path.of(document.getFilePath()));
-        return signatureService.verifySignature(data, signatureBytes, userId);
+        boolean verifyStatus = signatureService.verifySignature(data, signatureBytes, userId);
+        return verifyStatus ? VerificationStatus.VALID : VerificationStatus.INVALID;
     }
 }

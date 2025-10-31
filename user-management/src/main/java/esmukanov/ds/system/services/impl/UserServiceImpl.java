@@ -6,6 +6,7 @@ import esmukanov.ds.system.dtos.response.RegisterResponse;
 import esmukanov.ds.system.entities.UserEntity;
 import esmukanov.ds.system.enums.Role;
 import esmukanov.ds.system.enums.UserStatus;
+import esmukanov.ds.system.exceptions.NotFoundException;
 import esmukanov.ds.system.mappers.UserMapper;
 import esmukanov.ds.system.models.User;
 import esmukanov.ds.system.repositories.UserRepository;
@@ -59,6 +60,17 @@ public class UserServiceImpl extends BaseCrudOperationImpl<User, UserEntity, UUI
         return new RegisterResponse()
                 .setUsername(user.getUsername())
                 .setRegisteredDate(LocalDateTime.now());
+    }
+
+    @Override
+    public boolean loginUser(String username, String password) {
+        if (!userRepository.existsByUsername(username)) {
+            throw new NotFoundException("User by username [%s] not found".formatted(username));
+        }
+
+        User user = userMapper.toModel(userRepository.findByUsername(username));
+        String userPassword = user.getPassword();
+        return passwordEncoder.matches(password, userPassword);
     }
 
     /**

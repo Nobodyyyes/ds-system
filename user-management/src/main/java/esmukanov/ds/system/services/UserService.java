@@ -11,5 +11,7 @@ public interface UserService extends BaseCrudOperation<User, UUID> {
 
     RegisterResponse registerUser(RegisterRequest registerRequest);
 
+    boolean loginUser(String username, String password);
+
     boolean existsUser(UUID userId);
 }

@@ -50,4 +50,9 @@ public class UserManagementController {
     public RegisterResponse registerUser(@RequestBody RegisterRequest registerRequest) {
         return userService.registerUser(registerRequest);
     }
+
+    @PostMapping("/login/username/{username}/password/{password}")
+    public boolean loginUser(@PathVariable String username, @PathVariable String password) {
+        return userService.loginUser(username, password);
+    }
 }

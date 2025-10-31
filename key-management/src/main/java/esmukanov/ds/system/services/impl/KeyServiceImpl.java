@@ -60,7 +60,7 @@ public class KeyServiceImpl extends BaseCrudOperationImpl<UserKey, UserKeyEntity
         KeyPair keyPair = generator.generateKeyPair();
 
         // Проверяем, существует ли такой юзер вообще
-        if (!userService.existsUser(userId)) throw new NotFoundException("User by ID [%s] not found");
+        if (!userService.existsUser(userId)) throw new NotFoundException("User by ID [%s] not found".formatted(userId));
 
         UserKey userKey = UserKey.builder()
                 .userId(userId)

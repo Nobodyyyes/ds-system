@@ -62,9 +62,17 @@ public class UserServiceImpl extends BaseCrudOperationImpl<User, UserEntity, UUI
                 .setRegisteredDate(LocalDateTime.now());
     }
 
+    /**
+     * Выполняет аутентификацию пользователя по имени пользователя и паролю.
+     *
+     * @param username имя пользователя
+     * @param password пароль пользователя
+     * @return true, если аутентификация успешна, иначе false
+     * @throws NotFoundException если пользователь с указанным именем не найден
+     */
     @Override
     public boolean loginUser(String username, String password) {
-        if (!userRepository.existsByUsername(username)) {
+        if (!isExistsUserByUsername(username)) {
             throw new NotFoundException("User by username [%s] not found".formatted(username));
         }
 
@@ -80,7 +88,18 @@ public class UserServiceImpl extends BaseCrudOperationImpl<User, UserEntity, UUI
      * @return true если пользователь существует, иначе false
      */
     @Override
-    public boolean existsUser(UUID userId) {
+    public boolean isExistsUserByUuid(UUID userId) {
         return userRepository.existsById(userId);
+    }
+
+    /**
+     * Проверяет, существует ли пользователь с указанным именем пользователя.
+     *
+     * @param username имя пользователя для проверки
+     * @return true, если пользователь существует, иначе false
+     */
+    @Override
+    public boolean isExistsUserByUsername(String username) {
+        return userRepository.existsByUsername(username);
     }
 }

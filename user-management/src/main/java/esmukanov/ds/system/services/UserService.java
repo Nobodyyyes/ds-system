@@ -13,5 +13,7 @@ public interface UserService extends BaseCrudOperation<User, UUID> {
 
     boolean loginUser(String username, String password);
 
-    boolean existsUser(UUID userId);
+    boolean isExistsUserByUuid(UUID userId);
+
+    boolean isExistsUserByUsername(String username);
 }

@@ -23,4 +23,9 @@ public class KeyController {
     public String getPublicKey(@PathVariable UUID userId) {
         return keyService.getPublicKeyAsString(userId);
     }
+
+    @DeleteMapping("/{userId}")
+    public void deleteKeys(@PathVariable UUID userId) {
+        keyService.deleteKeys(userId);
+    }
 }

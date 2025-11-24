@@ -1,6 +1,5 @@
 target/
 .mvn/wrapper/maven-wrapper.jar
-*.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
@@ -28,3 +27,9 @@ target/
 build/
 !**/src/main/**/build/
 !**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+/processing-app/src/test/dbms/
+/processing-app/logs/
+/processing-app/src/test/http/http-client.private.env.json

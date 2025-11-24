@@ -1,8 +1,9 @@
-/Users/esmukanov/Downloads/projects/ds-system/hellgate/src/main/java/esmukanov/ds/system/HellgateApplication.java
-/Users/esmukanov/Downloads/projects/ds-system/hellgate/src/main/java/esmukanov/ds/system/configurations/MinioConfiguration.java
-/Users/esmukanov/Downloads/projects/ds-system/hellgate/src/main/java/esmukanov/ds/system/configurations/SecurityConfiguration.java
-/Users/esmukanov/Downloads/projects/ds-system/hellgate/src/main/java/esmukanov/ds/system/controllers/DocumentController.java
-/Users/esmukanov/Downloads/projects/ds-system/hellgate/src/main/java/esmukanov/ds/system/controllers/KeyController.java
-/Users/esmukanov/Downloads/projects/ds-system/hellgate/src/main/java/esmukanov/ds/system/controllers/SignatureController.java
-/Users/esmukanov/Downloads/projects/ds-system/hellgate/src/main/java/esmukanov/ds/system/controllers/UserManagementController.java
-/Users/esmukanov/Downloads/projects/ds-system/hellgate/src/main/java/esmukanov/ds/system/controllers/VerificationController.java
+C:\Users\esmukanov\IdeaProjects\projects\ds-system\hellgate\src\main\java\esmukanov\ds\system\configurations\MinioConfiguration.java
+C:\Users\esmukanov\IdeaProjects\projects\ds-system\hellgate\src\main\java\esmukanov\ds\system\configurations\SecurityConfiguration.java
+C:\Users\esmukanov\IdeaProjects\projects\ds-system\hellgate\src\main\java\esmukanov\ds\system\configurations\WebConfiguration.java
+C:\Users\esmukanov\IdeaProjects\projects\ds-system\hellgate\src\main\java\esmukanov\ds\system\controllers\DocumentController.java
+C:\Users\esmukanov\IdeaProjects\projects\ds-system\hellgate\src\main\java\esmukanov\ds\system\controllers\KeyController.java
+C:\Users\esmukanov\IdeaProjects\projects\ds-system\hellgate\src\main\java\esmukanov\ds\system\controllers\SignatureController.java
+C:\Users\esmukanov\IdeaProjects\projects\ds-system\hellgate\src\main\java\esmukanov\ds\system\controllers\UserManagementController.java
+C:\Users\esmukanov\IdeaProjects\projects\ds-system\hellgate\src\main\java\esmukanov\ds\system\controllers\VerificationController.java
+C:\Users\esmukanov\IdeaProjects\projects\ds-system\hellgate\src\main\java\esmukanov\ds\system\HellgateApplication.java

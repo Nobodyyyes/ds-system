@@ -16,5 +16,4 @@ public interface SignatureService {
     boolean verifySignature(byte[] data, byte[] signatureBytes, UUID userId) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException;
 
     byte[] signData(UUID userId, byte[] data) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException;
-
 }

@@ -56,7 +56,7 @@ public class AuditServiceImpl implements AuditService {
      */
     @Override
     public List<Audit> getUserHistory(UUID userId) {
-        if (userService.existsUser(userId)) throw new NotFoundException("User by ID [%s] not found".formatted(userId));
+        if (userService.isExistsUserByUuid(userId)) throw new NotFoundException("User by ID [%s] not found".formatted(userId));
 
         return auditMapper.toModels(auditRepository.getAllByUserId(userId));
     }

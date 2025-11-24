@@ -8,13 +8,17 @@ import esmukanov.ds.system.models.UserKey;
 import esmukanov.ds.system.repositories.KeyRepository;
 import esmukanov.ds.system.services.KeyService;
 import esmukanov.ds.system.services.UserService;
+import esmukanov.ds.system.utils.CryptoUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.crypto.SecretKey;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,6 +31,10 @@ public class KeyServiceImpl extends BaseCrudOperationImpl<UserKey, UserKeyEntity
     private final KeyMapper keyMapper;
 
     private final UserService userService;
+
+    @Value("${app.master-key}")
+    private String masterKeyEnv;
+
 
     public KeyServiceImpl(KeyRepository keyRepository, KeyMapper keyMapper, UserService userService) {
         super(keyRepository, keyMapper);
@@ -47,7 +55,7 @@ public class KeyServiceImpl extends BaseCrudOperationImpl<UserKey, UserKeyEntity
     }
 
     /**
-     * Генерирует пару ключей RSA для пользователя и сохраняет их в репозитории.
+     * Генерирует пару ключей RSA для пользователя и сохраняет их в БД.
      *
      * @param userId идентификатор пользователя
      * @throws NoSuchAlgorithmException если алгоритм RSA не поддерживается
@@ -55,17 +63,27 @@ public class KeyServiceImpl extends BaseCrudOperationImpl<UserKey, UserKeyEntity
     @Override
     @Transactional
     public void generateKeyPair(UUID userId) throws NoSuchAlgorithmException {
+
+        // Проверяем, существует ли такой юзер вообще
+        if (!userService.isExistsUserByUuid(userId)) {
+            throw new NotFoundException("User by ID [%s] already exists".formatted(userId));
+        }
+
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
         generator.initialize(2048);
         KeyPair keyPair = generator.generateKeyPair();
 
-        // Проверяем, существует ли такой юзер вообще
-        if (!userService.existsUser(userId)) throw new NotFoundException("User by ID [%s] not found".formatted(userId));
+        SecretKey masterKey = CryptoUtils.getMasterKeyFromEnv(masterKeyEnv);
+
+        byte[] privateBytes = keyPair.getPrivate().getEncoded();
+        CryptoUtils.EncryptedData encrypted = CryptoUtils.encryptAESGCM(privateBytes, masterKey);
 
         UserKey userKey = UserKey.builder()
                 .userId(userId)
-                .privateKey(Base64.getEncoder().encodeToString(keyPair.getPrivate().getEncoded()))
+                .privateKeyEncrypted(encrypted.cipherText())
+                .privateKeyIv(encrypted.iv())
                 .publicKey(Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()))
+                .createdAt(LocalDateTime.now())
                 .build();
 
         keyRepository.save(keyMapper.toEntity(userKey));
@@ -83,8 +101,10 @@ public class KeyServiceImpl extends BaseCrudOperationImpl<UserKey, UserKeyEntity
     @Override
     public PrivateKey getPrivateKey(UUID userId) throws NoSuchAlgorithmException, InvalidKeySpecException {
         UserKey userKey = findKeysByUserId(userId).orElseThrow(() -> new NotFoundException("UserKey by ID [%s] not found".formatted(userId)));
-        byte[] keyBytes = Base64.getDecoder().decode(userKey.getPrivateKey());
-        return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
+        CryptoUtils.EncryptedData data = new CryptoUtils.EncryptedData(userKey.getPrivateKeyIv(), userKey.getPrivateKeyEncrypted());
+        SecretKey masterKey = CryptoUtils.getMasterKeyFromEnv(masterKeyEnv);
+        byte[] privateBytes = CryptoUtils.decryptAESGCM(data, masterKey);
+        return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(privateBytes));
     }
 
     /**
@@ -99,7 +119,8 @@ public class KeyServiceImpl extends BaseCrudOperationImpl<UserKey, UserKeyEntity
      */
     @Override
     public PublicKey getPublicKey(UUID userId) {
-        UserKey userKey = findKeysByUserId(userId).orElseThrow(() -> new NotFoundException("UserKey by ID [%s] not found".formatted(userId)));
+        UserKey userKey = findKeysByUserId(userId)
+                .orElseThrow(() -> new NotFoundException("UserKey by ID [%s] not found".formatted(userId)));
 
         try {
             byte[] keyBytes = Base64.getDecoder().decode(userKey.getPublicKey());
@@ -132,6 +153,8 @@ public class KeyServiceImpl extends BaseCrudOperationImpl<UserKey, UserKeyEntity
      */
     @Override
     public void deleteKeys(UUID userId) {
-        if (userService.existsUser(userId)) keyRepository.deleteAllByUserId(userId);
+        if (userService.isExistsUserByUuid(userId)) {
+            keyRepository.deleteAllByUserId(userId);
+        }
     }
 }

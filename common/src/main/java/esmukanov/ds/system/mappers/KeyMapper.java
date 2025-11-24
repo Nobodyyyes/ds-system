@@ -15,8 +15,13 @@ public class KeyMapper implements BaseMapper<UserKey, UserKeyEntity> {
         return UserKey.builder()
                 .id(entity.getId())
                 .userId(entity.getUserId())
-                .privateKey(entity.getPrivateKey())
+                .privateKeyEncrypted(entity.getPrivateKeyEncrypted())
+                .privateKeyIv(entity.getPrivateKeyIv())
                 .publicKey(entity.getPublicKey())
+                .createdAt(entity.getCreatedAt())
+                .isRevoked(entity.isRevoked())
+                .revokedAt(entity.getRevokedAt())
+                .version(entity.getVersion())
                 .build();
     }
 
@@ -27,8 +32,13 @@ public class KeyMapper implements BaseMapper<UserKey, UserKeyEntity> {
         return UserKeyEntity.builder()
                 .id(model.getId())
                 .userId(model.getUserId())
-                .privateKey(model.getPrivateKey())
+                .privateKeyEncrypted(model.getPrivateKeyEncrypted())
+                .privateKeyIv(model.getPrivateKeyIv())
                 .publicKey(model.getPublicKey())
+                .createdAt(model.getCreatedAt())
+                .isRevoked(model.isRevoked())
+                .revokedAt(model.getRevokedAt())
+                .version(model.getVersion())
                 .build();
     }
 }

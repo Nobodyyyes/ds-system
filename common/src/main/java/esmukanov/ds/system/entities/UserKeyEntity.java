@@ -41,5 +41,5 @@ public class UserKeyEntity {
     private LocalDateTime revokedAt;
 
     @Column(name = "version")
-    private Long version;
+    private int version;
 }

@@ -1,6 +1,7 @@
 package esmukanov.ds.system.services.impl;
 
 import esmukanov.ds.system.components.base.BaseCrudOperationImpl;
+import esmukanov.ds.system.dtos.PublicKeyDto;
 import esmukanov.ds.system.entities.UserKeyEntity;
 import esmukanov.ds.system.exceptions.NotFoundException;
 import esmukanov.ds.system.mappers.KeyMapper;
@@ -9,6 +10,7 @@ import esmukanov.ds.system.repositories.KeyRepository;
 import esmukanov.ds.system.services.KeyService;
 import esmukanov.ds.system.services.UserService;
 import esmukanov.ds.system.utils.CryptoUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,9 +22,11 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class KeyServiceImpl extends BaseCrudOperationImpl<UserKey, UserKeyEntity, UUID> implements KeyService {
 
@@ -58,35 +62,17 @@ public class KeyServiceImpl extends BaseCrudOperationImpl<UserKey, UserKeyEntity
      * Генерирует пару ключей RSA для пользователя и сохраняет их в БД.
      *
      * @param userId идентификатор пользователя
-     * @throws NoSuchAlgorithmException если алгоритм RSA не поддерживается
      */
     @Override
     @Transactional
-    public void generateKeyPair(UUID userId) throws NoSuchAlgorithmException {
-
-        // Проверяем, существует ли такой юзер вообще
+    public void generateKeyPair(UUID userId) throws IllegalAccessException {
         if (!userService.isExistsUserByUuid(userId)) {
-            throw new NotFoundException("User by ID [%s] already exists".formatted(userId));
+            throw new NotFoundException("User by ID [%s] not found".formatted(userId));
         }
 
-        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
-        generator.initialize(2048);
-        KeyPair keyPair = generator.generateKeyPair();
-
-        SecretKey masterKey = CryptoUtils.getMasterKeyFromEnv(masterKeyEnv);
-
-        byte[] privateBytes = keyPair.getPrivate().getEncoded();
-        CryptoUtils.EncryptedData encrypted = CryptoUtils.encryptAESGCM(privateBytes, masterKey);
-
-        UserKey userKey = UserKey.builder()
-                .userId(userId)
-                .privateKeyEncrypted(encrypted.cipherText())
-                .privateKeyIv(encrypted.iv())
-                .publicKey(Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()))
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        keyRepository.save(keyMapper.toEntity(userKey));
+        PublicKeyDto generatedKeyPair = processGenerateKeyPair(userId);
+        log.info("Generated new key pair for user [{}], version [{}]", userId, generatedKeyPair.version());
+        log.info("Public key [{}] for user [{}]", generatedKeyPair.publicKey(), userId);
     }
 
     /**
@@ -146,7 +132,6 @@ public class KeyServiceImpl extends BaseCrudOperationImpl<UserKey, UserKeyEntity
 
     /**
      * Удаляет все ключи пользователя по его идентификатору.
-     *
      * Если пользователь не существует, метод завершается без действий.
      *
      * @param userId идентификатор пользователя
@@ -155,6 +140,73 @@ public class KeyServiceImpl extends BaseCrudOperationImpl<UserKey, UserKeyEntity
     public void deleteKeys(UUID userId) {
         if (userService.isExistsUserByUuid(userId)) {
             keyRepository.deleteAllByUserId(userId);
+        }
+    }
+
+    /**
+     * Выполняет ротацию ключа пользователя: деактивирует текущие ключи и генерирует новую пару ключей.
+     *
+     * @param userId идентификатор пользователя
+     * @return PublicKeyDto объект с новым публичным ключом и его версией
+     * @throws NotFoundException если пользователь с указанным идентификатором уже существует
+     * @throws RuntimeException  при ошибке ротации ключа
+     */
+    @Override
+    public PublicKeyDto rotateKey(UUID userId) {
+        try {
+            if (!userService.isExistsUserByUuid(userId)) {
+                throw new NotFoundException("User by ID [%s] not found".formatted(userId));
+            }
+
+            deactivateKey(userId);
+
+            return processGenerateKeyPair(userId);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to rotate key for user " + userId, e);
+        }
+    }
+
+    private void deactivateKey(UUID userId) {
+        List<UserKey> userKeys = keyMapper.toModels(keyRepository.findAllByUserId(userId));
+        userKeys.forEach(key -> {
+            if (!key.isRevoked()) {
+                key.setRevoked(true);
+                key.setRevokedAt(LocalDateTime.now());
+            }
+        });
+
+        keyRepository.saveAll(keyMapper.toEntities(userKeys));
+    }
+
+    private PublicKeyDto processGenerateKeyPair(UUID userId) throws IllegalAccessException {
+        try {
+            KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+            generator.initialize(2048);
+            KeyPair keyPair = generator.generateKeyPair();
+
+            SecretKey masterKey = CryptoUtils.getMasterKeyFromEnv(masterKeyEnv);
+
+            byte[] privateBytes = keyPair.getPrivate().getEncoded();
+            CryptoUtils.EncryptedData encrypted = CryptoUtils.encryptAESGCM(privateBytes, masterKey);
+
+            int currentVersion = keyRepository.findCurrentVersion(userId);
+            int newVersion = currentVersion + 1;
+
+            UserKey userKey = UserKey.builder()
+                    .userId(userId)
+                    .privateKeyEncrypted(encrypted.cipherText())
+                    .privateKeyIv(encrypted.iv())
+                    .publicKey(Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()))
+                    .createdAt(LocalDateTime.now())
+                    .isRevoked(false)
+                    .version(newVersion)
+                    .build();
+
+            keyRepository.save(keyMapper.toEntity(userKey));
+
+            return new PublicKeyDto(userKey.getPublicKey(), userKey.getVersion());
+        } catch (Exception e) {
+            throw new IllegalAccessException("Failed generate key pair");
         }
     }
 }

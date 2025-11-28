@@ -1,6 +1,6 @@
 esmukanov\ds\system\controllers\SignatureController.class
-esmukanov\ds\system\controllers\UserManagementController.class
 esmukanov\ds\system\HellgateApplication.class
+esmukanov\ds\system\controllers\UserController.class
 esmukanov\ds\system\configurations\SecurityConfiguration.class
 esmukanov\ds\system\configurations\WebConfiguration$1.class
 esmukanov\ds\system\controllers\DocumentController.class

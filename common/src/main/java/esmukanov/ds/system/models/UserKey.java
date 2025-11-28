@@ -28,5 +28,5 @@ public class UserKey {
 
     private LocalDateTime revokedAt;
 
-    private Long version;
+    private int version;
 }

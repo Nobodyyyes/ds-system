@@ -22,3 +22,6 @@ minio-config:
 
 app:
   master-key: ${MASTER_KEY:q50cdH2AnbvEuWqt7Q3E9kItfia9OSU3nV9pHWHWw4E=}
+
+cron:
+  rotate-time: ${ROTATE_TIME:0 0 3 1 * *} #every month at 3:00 AM

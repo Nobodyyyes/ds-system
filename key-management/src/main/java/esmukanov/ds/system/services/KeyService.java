@@ -1,6 +1,7 @@
 package esmukanov.ds.system.services;
 
 import esmukanov.ds.system.components.base.BaseCrudOperation;
+import esmukanov.ds.system.dtos.PublicKeyDto;
 import esmukanov.ds.system.models.UserKey;
 
 import java.security.NoSuchAlgorithmException;
@@ -14,7 +15,7 @@ public interface KeyService extends BaseCrudOperation<UserKey, UUID> {
 
     Optional<UserKey> findKeysByUserId(UUID userId);
 
-    void generateKeyPair(UUID userId) throws NoSuchAlgorithmException;
+    void generateKeyPair(UUID userId) throws NoSuchAlgorithmException, IllegalAccessException;
 
     PrivateKey getPrivateKey(UUID userId) throws NoSuchAlgorithmException, InvalidKeySpecException;
 
@@ -23,4 +24,6 @@ public interface KeyService extends BaseCrudOperation<UserKey, UUID> {
     String getPublicKeyAsString(UUID userId);
 
     void deleteKeys(UUID userId);
+
+    PublicKeyDto rotateKey(UUID userId);
 }

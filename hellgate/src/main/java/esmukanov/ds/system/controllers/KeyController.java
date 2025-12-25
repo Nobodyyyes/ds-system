@@ -20,11 +20,6 @@ public class KeyController {
         keyService.generateKeyPair(userId);
     }
 
-    @GetMapping("/public/{userId}")
-    public String getPublicKey(@PathVariable UUID userId) {
-        return keyService.getPublicKeyAsString(userId);
-    }
-
     @PostMapping("/rotate/{userId}")
     public PublicKeyDto rotateKeys(@PathVariable UUID userId) {
         return keyService.rotateKey(userId);

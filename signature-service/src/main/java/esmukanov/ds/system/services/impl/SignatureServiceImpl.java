@@ -1,10 +1,12 @@
 package esmukanov.ds.system.services.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import esmukanov.ds.system.dtos.response.SignedInfo;
 import esmukanov.ds.system.mappers.DocumentSignatureMapper;
-import esmukanov.ds.system.models.DocumentSignature;
 import esmukanov.ds.system.repositories.DocumentSignatureRepository;
 import esmukanov.ds.system.services.KeyService;
 import esmukanov.ds.system.services.SignatureService;
+import esmukanov.ds.system.utils.ZipUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,6 +16,7 @@ import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -25,6 +28,12 @@ public class SignatureServiceImpl implements SignatureService {
     private final DocumentSignatureMapper documentSignatureMapper;
 
     private final KeyService keyService;
+
+    private final ObjectMapper objectMapper;
+
+    private static final String SHA_256 = "SHA-256";
+
+    private static final String SHA256_WITH_RSA = "SHA256withRSA";
 
     /**
      * Подписывает переданный файл для указанного пользователя.
@@ -44,56 +53,77 @@ public class SignatureServiceImpl implements SignatureService {
      * @throws IOException              если ошибка чтения содержимого файла
      */
     @Override
-    public String signDocument(MultipartFile file, UUID userId) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, IOException {
+    public byte[] signDocument(MultipartFile file, UUID userId) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, IOException {
+
+        // 1. Получаем байты исходного файла
         byte[] fileBytes = file.getBytes();
 
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        // 2. Хэш документа
+        MessageDigest digest = MessageDigest.getInstance(SHA_256);
         byte[] hashBytes = digest.digest(fileBytes);
         String hashBase64 = Base64.getEncoder().encodeToString(hashBytes);
 
+        // 3. Получаем приватный ключ пользователя
         PrivateKey privateKey = keyService.getPrivateKey(userId);
 
-        Signature signature = Signature.getInstance("SHA256withRSA");
+        // 4. Подписываем хэш документа
+        Signature signature = Signature.getInstance(SHA256_WITH_RSA);
         signature.initSign(privateKey);
         signature.update(hashBytes);
         byte[] signedBytes = signature.sign();
-        String signatureBase64 = Base64.getEncoder().encodeToString(signedBytes);
 
-        DocumentSignature documentSignature = DocumentSignature.builder()
-                .userId(userId)
+        SignedInfo signedInfo = SignedInfo.builder()
                 .fileName(file.getOriginalFilename())
-                .fileHash(hashBase64)
-                .signedDate(LocalDateTime.now())
-                .signature(signatureBase64)
+                .hashAlgorithm(SHA_256)
+                .signatureAlgorithm(SHA256_WITH_RSA)
+                .hashFileBase64(hashBase64)
+                .signedAt(LocalDateTime.now())
+                .userId(userId.toString())
+                .publicKeyBase64(Base64.getEncoder().encodeToString(keyService.getPublicKey(userId).getEncoded()))
                 .build();
 
-        documentSignatureRepository.save(documentSignatureMapper.toEntity(documentSignature));
+        byte[] signedInfoBytes = objectMapper.writeValueAsBytes(signedInfo);
 
-        return signatureBase64;
+        return ZipUtils.createZip(file.getOriginalFilename(), fileBytes,
+                file.getOriginalFilename() + ".txt", signedBytes,
+                "signature.json", signedInfoBytes);
     }
 
     /**
      * Проверяет цифровую подпись для заданных данных и пользователя.
      *
-     * @param data           данные, для которых проверяется подпись
-     * @param signatureBytes байты подписи
-     * @param userId         идентификатор пользователя
+     * @param userId идентификатор пользователя
      * @return true, если подпись действительна, иначе false
      * @throws NoSuchAlgorithmException если алгоритм подписи не найден
      * @throws InvalidKeyException      если ключ некорректен
      * @throws SignatureException       если произошла ошибка при проверке подписи
      */
     @Override
-    public boolean verifySignature(byte[] data, byte[] signatureBytes, UUID userId) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+    public boolean verifySignature(MultipartFile signedFile, UUID userId) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, IOException {
+
+        // 1. Получаем публичный ключ пользователя
         PublicKey publicKey = keyService.getPublicKey(userId);
 
-        Signature signature = Signature.getInstance("SHA256withRSA");
+        // 2. Извлекаем данные из ZIP
+        Map<String, byte[]> zipEntries = ZipUtils.extractZip(signedFile.getBytes());
+
+        byte[] documentBytes = zipEntries.get("document");
+        byte[] storedHashBytes = Base64.getDecoder().decode(new String(zipEntries.get("document.hash")));
+        byte[] signatureBytes = Base64.getDecoder().decode(new String(zipEntries.get("signature.sig")));
+
+        // 3. Повторны вычисляем хэш документа
+        MessageDigest digest = MessageDigest.getInstance(SHA_256);
+        byte[] calculatedHash = digest.digest(documentBytes);
+
+        // 4. Проверка целосности документа
+        if (MessageDigest.isEqual(storedHashBytes, calculatedHash)) {
+            return false;
+        }
+
+        // 5. Проверка подписи
+        Signature signature = Signature.getInstance(SHA256_WITH_RSA);
         signature.initVerify(publicKey);
-
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hashBytes = digest.digest(data);
-
-        signature.update(hashBytes);
+        signature.update(calculatedHash);
 
         return signature.verify(signatureBytes);
     }

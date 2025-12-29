@@ -14,6 +14,4 @@ public interface SignatureService {
     byte[] signDocument(MultipartFile file, UUID userId) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, IOException;
 
     boolean verifySignature(MultipartFile signedFile, UUID userId) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, IOException;
-
-    byte[] signData(UUID userId, byte[] data) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException;
 }

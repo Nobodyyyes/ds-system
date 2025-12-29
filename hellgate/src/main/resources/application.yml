@@ -14,12 +14,6 @@ spring:
       max-file-size: 5MB
       max-request-size: 10MB
 
-minio-config:
-  url: ${MINIO_URL:http://localhost:9000}
-  access-key: ${MINIO_ACCESS_KEY:digitals}
-  secret-key: ${MINIO_SECRET_KEY:digitals}
-  bucket: ${MINIO_BUCKET:documents}
-
 app:
   master-key: ${MASTER_KEY:q50cdH2AnbvEuWqt7Q3E9kItfia9OSU3nV9pHWHWw4E=}
 

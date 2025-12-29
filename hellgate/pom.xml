@@ -48,12 +48,6 @@
             <version>${project.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>esmukanov.ds.system</groupId>
-            <artifactId>verification-service</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
         <!-- Внешние зависимости -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

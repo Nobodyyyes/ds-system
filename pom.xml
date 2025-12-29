@@ -23,7 +23,6 @@
         <module>user-management</module>
         <module>key-management</module>
         <module>signature-service</module>
-        <module>verification-service</module>
         <module>audit-service</module>
         <module>common</module>
     </modules>

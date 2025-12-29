@@ -2,8 +2,6 @@ package esmukanov.ds.system.services.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import esmukanov.ds.system.dtos.response.SignedInfo;
-import esmukanov.ds.system.mappers.DocumentSignatureMapper;
-import esmukanov.ds.system.repositories.DocumentSignatureRepository;
 import esmukanov.ds.system.services.KeyService;
 import esmukanov.ds.system.services.SignatureService;
 import esmukanov.ds.system.utils.ZipUtils;
@@ -22,10 +20,6 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class SignatureServiceImpl implements SignatureService {
-
-    private final DocumentSignatureRepository documentSignatureRepository;
-
-    private final DocumentSignatureMapper documentSignatureMapper;
 
     private final KeyService keyService;
 
@@ -115,7 +109,7 @@ public class SignatureServiceImpl implements SignatureService {
         MessageDigest digest = MessageDigest.getInstance(SHA_256);
         byte[] calculatedHash = digest.digest(documentBytes);
 
-        // 4. Проверка целосности документа
+        // 4. Проверка целостности документа
         if (MessageDigest.isEqual(storedHashBytes, calculatedHash)) {
             return false;
         }
@@ -126,10 +120,5 @@ public class SignatureServiceImpl implements SignatureService {
         signature.update(calculatedHash);
 
         return signature.verify(signatureBytes);
-    }
-
-    @Override
-    public byte[] signData(UUID userId, byte[] data) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        return new byte[0];
     }
 }

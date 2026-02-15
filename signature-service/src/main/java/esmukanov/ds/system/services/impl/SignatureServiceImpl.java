@@ -110,7 +110,7 @@ public class SignatureServiceImpl implements SignatureService {
         byte[] calculatedHash = digest.digest(documentBytes);
 
         // 4. Проверка целостности документа
-        if (MessageDigest.isEqual(storedHashBytes, calculatedHash)) {
+        if (!MessageDigest.isEqual(storedHashBytes, calculatedHash)) {
             return false;
         }
 
